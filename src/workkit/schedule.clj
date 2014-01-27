@@ -21,6 +21,7 @@
            :spec (:redis opts)}}))
 
 (defmacro with-schedule
+  "Manipulate a WorkKit schedule with redis in the macro body."
   [schedule & body]
   `(redis/wcar (:conn ~schedule)
      ~@body))
