@@ -67,9 +67,20 @@
   [schedule time-type time-text job & args]
   (let [cron-string (cron/build time-type time-text)
         job-id (job/id cron-string job args)]
-    (when (insert-job schedule cron-string job args)
+    (if (insert-job schedule cron-string job args)
       (queue-next schedule cron-string job args))
     (job/id cron-string job args)))
+
+(defn acquire-job
+  [schedule]
+  (let [[job-id score] (with-schedule schedule
+                         (redis/zremrange
+                           (next-key schedule)
+                           0 1
+                           :withscores))]
+    (if (<= score (now))
+      (with-schedule schedule)
+      (release-job schedule job-id score))))
 
 (defn process
   "Process jobs from the schedule, blocking the current thread.
