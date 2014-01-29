@@ -1,6 +1,7 @@
 (ns workkit.redis.jobs-test
   (:require [workkit.schedule :as schedule]
             [workkit.job :as job]
+            [workkit.redis :as redis]
             [workkit.redis.jobs :as jobs])
   (:use clojure.test))
 
@@ -11,8 +12,6 @@
 ;;
 ;; (job/run {:cron "", :job #'println, :args ["bob"]})
 
-;; (jobs/key s) "foo:jobs"
-;; (jobs/add s id {:cron ... })
 ;; (jobs/get s id)
 ;; (jobs/all s)
 ;; (jobs/cancel s id)
@@ -31,7 +30,7 @@
         (testing "adds the payload to a redis hash"
           (jobs/add schedule "job1" payload)
           (is (= (job/payload payload)
-                 (redis/hget (:conn schedule)
+                 (redis/hget schedule
                              (jobs/key schedule)
                              "job1"))))
 

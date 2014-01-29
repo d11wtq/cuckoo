@@ -6,7 +6,8 @@
 (defn payload
   "Builds a json payload for this WorkKit job."
   [payload-map]
-  (json/write-str payload-map))
+  (json/write-str (assoc payload-map
+                         :job (str (:job payload-map)))))
 
 (defn id
   "Computes a unique ID for this WorkKit job."

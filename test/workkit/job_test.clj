@@ -49,7 +49,7 @@
       (testing "returns a json representation"
         (is (= (clojure.string/join
                  ","
-                 "{\"cron\":\"* * * * * * *\""
-                 "\"job\":\"#'clojure.core\\/println\""
-                 "\"args\":[\"test\"]}")
+                 ["{\"cron\":\"* * * * * * *\""
+                  "\"job\":\"#'clojure.core\\/println\""
+                  "\"args\":[\"test\"]}"])
                (job/payload payload)))))))
