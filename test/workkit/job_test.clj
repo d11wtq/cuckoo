@@ -51,4 +51,15 @@
                        "* * * * * * *"
                        "#'clojure.core\\/println"
                        "[\"test\"]")
-               (job/dump-str payload)))))))
+               (job/dump-str payload))))))
+
+  (testing "workkit.job/parse-str"
+    (let [payload-str (format "{\"cron\":\"%s\",\"job\":\"%s\",\"args\":%s}"
+                              "* * * * * * *"
+                              "#'clojure.core\\/println"
+                              "[\"test\"]")]
+      (testing "returns a clojure map"
+        (is (= {:cron "* * * * * * *"
+                :job #'println
+                :args ["test"]}
+               (job/parse-str payload-str)))))))

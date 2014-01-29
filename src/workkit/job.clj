@@ -5,17 +5,17 @@
 
 (defn dump-str
   "Dump a WorkKit json payload from a Clojure map."
-  [payload-map]
-  (json/write-str (assoc payload-map
-                         :job (str (:job payload-map)))))
+  [payload]
+  (json/write-str (assoc payload
+                         :job (str (:job payload)))))
 
 (defn parse-str
   "Parse a WorkKit json payload to a Clojure map."
-  [payload]
-  (let [payload-map (json/read-str payload :key-fn keyword)]
-    (assoc payload-map
+  [payload-str]
+  (let [payload (json/read-str payload-str :key-fn keyword)]
+    (assoc payload
            :job
-           (eval (read-string (:job payload-map))))))
+           (eval (read-string (:job payload))))))
 
 (defn id
   "Computes the WorkKit job ID for the given job payload."
