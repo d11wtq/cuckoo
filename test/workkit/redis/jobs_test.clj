@@ -5,10 +5,7 @@
             [workkit.redis.jobs :as jobs])
   (:use clojure.test))
 
-;; (job/payload {:cron "", :job #'println, :args ["bob]})
 ;; (job/from-payload "")
-;;
-;; (job/id {:cron "", :job #'println, :args ["bob"]})
 ;;
 ;; (job/run {:cron "", :job #'println, :args ["bob"]})
 
@@ -22,17 +19,35 @@
 
     (testing "workkit.redis.jobs/key"
       (testing "uses the schedule name as a prefix"
+        (redis/flushall schedule)
         (is (= "test:jobs"
                (jobs/key schedule)))))
 
     (testing "workkit.redis.jobs/add"
       (testing "for a non-existing job"
         (testing "adds the payload to a redis hash"
-          (jobs/add schedule "job1" payload)
+          (redis/flushall schedule)
+          (jobs/add schedule "job" payload)
           (is (= (job/payload payload)
                  (redis/hget schedule
                              (jobs/key schedule)
-                             "job1"))))
+                             "job"))))
 
         (testing "returns true"
-          (is (true? (jobs/add schedule "job2" payload))))))))
+          (redis/flushall schedule)
+          (is (true? (jobs/add schedule "job" payload)))))
+
+      (testing "for a duplicate job"
+        (testing "leaves the payload in redis"
+          (redis/flushall schedule)
+          (jobs/add schedule "job" payload)
+          (jobs/add schedule "job" payload)
+          (is (= (job/payload payload)
+                 (redis/hget schedule
+                             (jobs/key schedule)
+                             "job"))))
+
+        (testing "returns false"
+          (redis/flushall schedule)
+          (jobs/add schedule "job" payload)
+          (is (false? (jobs/add schedule "job" payload))))))))

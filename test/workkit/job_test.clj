@@ -47,9 +47,8 @@
                    :job #'println
                    :args ["test"]}]
       (testing "returns a json representation"
-        (is (= (clojure.string/join
-                 ","
-                 ["{\"cron\":\"* * * * * * *\""
-                  "\"job\":\"#'clojure.core\\/println\""
-                  "\"args\":[\"test\"]}"])
+        (is (= (format "{\"cron\":\"%s\",\"job\":\"%s\",\"args\":%s}"
+                       "* * * * * * *"
+                       "#'clojure.core\\/println"
+                       "[\"test\"]")
                (job/payload payload)))))))

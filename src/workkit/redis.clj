@@ -7,6 +7,11 @@
   `(carmine/wcar (:conn ~schedule)
      ~@body))
 
+(defn flushall
+  [schedule]
+  (with-redis schedule
+    (carmine/flushall)))
+
 (defn hget
   [schedule key field]
   (with-redis schedule
