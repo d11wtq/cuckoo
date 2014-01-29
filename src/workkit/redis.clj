@@ -17,6 +17,11 @@
   (with-redis schedule
     (carmine/hget key field)))
 
+(defn hset
+  [schedule key field value]
+  (with-redis schedule
+    (carmine/hset key field value)))
+
 (defn hsetnx
   [schedule key field value]
   (with-redis schedule

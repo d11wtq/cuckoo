@@ -3,13 +3,21 @@
   (:require [clojure.data.json :as json]
             digest))
 
-(defn payload
-  "Builds a json payload for this WorkKit job."
+(defn dump-str
+  "Dump a WorkKit json payload from a Clojure map."
   [payload-map]
   (json/write-str (assoc payload-map
                          :job (str (:job payload-map)))))
 
+(defn parse-str
+  "Parse a WorkKit json payload to a Clojure map."
+  [payload]
+  (let [payload-map (json/read-str payload :key-fn keyword)]
+    (assoc payload-map
+           :job
+           (eval (read-string (:job payload-map))))))
+
 (defn id
-  "Computes a unique ID for this WorkKit job."
-  [payload-map]
-  (digest/sha1 (payload payload-map)))
+  "Computes the WorkKit job ID for the given job payload."
+  [payload]
+  (digest/sha1 (dump-str payload)))

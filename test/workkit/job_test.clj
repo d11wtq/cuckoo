@@ -42,7 +42,7 @@
                          :job #'println
                          :args ["bar"]})))))
 
-  (testing "workkit.job/payload"
+  (testing "workkit.job/dump-str"
     (let [payload {:cron "* * * * * * *"
                    :job #'println
                    :args ["test"]}]
@@ -51,4 +51,4 @@
                        "* * * * * * *"
                        "#'clojure.core\\/println"
                        "[\"test\"]")
-               (job/payload payload)))))))
+               (job/dump-str payload)))))))

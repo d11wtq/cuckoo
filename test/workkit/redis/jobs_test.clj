@@ -27,27 +27,38 @@
       (testing "for a non-existing job"
         (testing "adds the payload to a redis hash"
           (redis/flushall schedule)
-          (jobs/add schedule "job" payload)
-          (is (= (job/payload payload)
+          (jobs/add schedule "testjob" payload)
+          (is (= (job/dump-str payload)
                  (redis/hget schedule
                              (jobs/key schedule)
-                             "job"))))
+                             "testjob"))))
 
         (testing "returns true"
           (redis/flushall schedule)
-          (is (true? (jobs/add schedule "job" payload)))))
+          (is (true? (jobs/add schedule "testjob" payload)))))
 
       (testing "for a duplicate job"
         (testing "leaves the payload in redis"
           (redis/flushall schedule)
-          (jobs/add schedule "job" payload)
-          (jobs/add schedule "job" payload)
-          (is (= (job/payload payload)
+          (jobs/add schedule "testjob" payload)
+          (jobs/add schedule "testjob" payload)
+          (is (= (job/dump-str payload)
                  (redis/hget schedule
                              (jobs/key schedule)
-                             "job"))))
+                             "testjob"))))
 
         (testing "returns false"
           (redis/flushall schedule)
-          (jobs/add schedule "job" payload)
-          (is (false? (jobs/add schedule "job" payload))))))))
+          (jobs/add schedule "testjob" payload)
+          (is (false? (jobs/add schedule "testjob" payload))))))
+
+    (testing "workkit.redis.jobs/fetch"
+      (testing "for a job that exists"
+        (testing "returns the job payload"
+          (redis/flushall schedule)
+          (redis/hset schedule
+                      "test:jobs"
+                      "testjob"
+                      (job/dump-str payload))
+          (is (= payload
+                 (jobs/fetch schedule "testjob"))))))))
