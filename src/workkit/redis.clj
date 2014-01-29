@@ -26,3 +26,13 @@
   [schedule key field value]
   (with-redis schedule
     (carmine/hsetnx key field value)))
+
+(defn zadd
+  [schedule key score value]
+  (with-redis schedule
+    (carmine/zadd key score value)))
+
+(defn zrange
+  [schedule key start stop opts]
+  (with-redis schedule
+    (carmine/zrange key start stop opts)))
