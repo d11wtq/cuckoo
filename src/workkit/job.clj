@@ -9,7 +9,7 @@
   (json/write-str (assoc payload
                          :job (str (:job payload)))))
 
-(defn parse-str
+(defn load-str
   "Parse a WorkKit json payload to a Clojure map."
   [payload-str]
   (let [payload (json/read-str payload-str :key-fn keyword)]

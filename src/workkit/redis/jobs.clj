@@ -25,4 +25,4 @@
                                 (key schedule)
                                 id)]
     (if payload-str
-      (job/parse-str payload-str))))
+      (job/load-str payload-str))))

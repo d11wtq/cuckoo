@@ -53,7 +53,7 @@
                        "[\"test\"]")
                (job/dump-str payload))))))
 
-  (testing "workkit.job/parse-str"
+  (testing "workkit.job/load-str"
     (let [payload-str (format "{\"cron\":\"%s\",\"job\":\"%s\",\"args\":%s}"
                               "* * * * * * *"
                               "#'clojure.core\\/println"
@@ -62,7 +62,7 @@
         (is (= {:cron "* * * * * * *"
                 :job #'println
                 :args ["test"]}
-               (job/parse-str payload-str))))))
+               (job/load-str payload-str))))))
 
   (testing "workkit.job/run"
     (let [payload {:cron "* * * * * * *"
