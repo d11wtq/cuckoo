@@ -5,11 +5,6 @@
             [workkit.redis.jobs :as jobs])
   (:use clojure.test))
 
-;; (job/run {:cron "", :job #'println, :args ["bob"]})
-
-;; (jobs/all s)
-;; (jobs/cancel s id)
-
 (deftest jobs-test
   (let [schedule (schedule/create "test" {:uri (System/getenv "REDIS_URI")})
         payload {:cron "* * * * * * *" :job #'println :args ["test"]}]
