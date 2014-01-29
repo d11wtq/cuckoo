@@ -5,11 +5,8 @@
             [workkit.redis.jobs :as jobs])
   (:use clojure.test))
 
-;; (job/from-payload "")
-;;
 ;; (job/run {:cron "", :job #'println, :args ["bob"]})
 
-;; (jobs/get s id)
 ;; (jobs/all s)
 ;; (jobs/cancel s id)
 
@@ -61,4 +58,9 @@
                       "testjob"
                       (job/dump-str payload))
           (is (= payload
-                 (jobs/fetch schedule "testjob"))))))))
+                 (jobs/fetch schedule "testjob")))))
+
+      (testing "for a job that does not exist"
+        (testing "returns nil"
+          (redis/flushall schedule)
+          (is (nil? (jobs/fetch schedule "badjob"))))))))

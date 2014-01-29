@@ -21,6 +21,8 @@
 (defn fetch
   "Fetch a WorkKit job by its job ID, or nil if not found."
   [schedule id]
-  (job/parse-str (redis/hget schedule
-                             (key schedule)
-                             id)))
+  (let [payload-str (redis/hget schedule
+                                (key schedule)
+                                id)]
+    (if payload-str
+      (job/parse-str payload-str))))
