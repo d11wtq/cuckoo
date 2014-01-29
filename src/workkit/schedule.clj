@@ -6,19 +6,12 @@
   (:import java.util.Date))
 
 (defn create
-  "Create a new WorkKit schedule instance with the given name.
-
-  Opts currently only supports :redis which is a map of the form:
-
-    {:uri \"redis://127.0.0.1:9376/\"}
-
-  This is the default connection uri."
+  "Create a new WorkKit schedule with the given name."
   ([name]
    (create name nil))
   ([name opts]
    {:name name
-    :conn {:pool nil
-           :spec (:redis opts)}}))
+    :conn {:pool nil :spec opts}}))
 
 (defmacro with-schedule
   "Manipulate a WorkKit schedule with redis in the macro body."

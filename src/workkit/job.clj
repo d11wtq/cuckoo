@@ -4,13 +4,11 @@
             digest))
 
 (defn payload
-  "Builds a JSON payload for this job."
-  [cron-string job args]
-  (json/write-str {:cron cron-string
-                   :job  (str job)
-                   :args args}))
+  "Builds a json payload for this WorkKit job."
+  [payload-map]
+  (json/write-str payload-map))
 
 (defn id
-  "Computes a unique ID for this job."
-  [cron-string job args]
-  (digest/sha1 (payload cron-string job args)))
+  "Computes a unique ID for this WorkKit job."
+  [payload-map]
+  (digest/sha1 (payload payload-map)))

@@ -1,4 +1,7 @@
 (ns workkit.redis.jobs-test
+  (:require [workkit.schedule :as schedule]
+            [workkit.job :as job]
+            [workkit.redis.jobs :as jobs])
   (:use clojure.test))
 
 ;; (job/payload {:cron "", :job #'println, :args ["bob]})
@@ -15,15 +18,20 @@
 ;; (jobs/cancel s id)
 
 (deftest jobs-test
-  (let [schedule (schedule/create "test" {:uri "redis://127.0.0.1:6379/"})
+  (let [schedule (schedule/create "test" {:uri (System/getenv "REDIS_URI")})
         payload {:cron "* * * * * * *" :job #'println :args ["test"]}]
+
+    (testing "workkit.redis.jobs/key"
+      (testing "uses the schedule name as a prefix"
+        (is (= "test:jobs"
+               (jobs/key schedule)))))
 
     (testing "workkit.redis.jobs/add"
       (testing "for a non-existing job"
         (testing "adds the payload to a redis hash"
           (jobs/add schedule "job1" payload)
           (is (= (job/payload payload)
-                 (redis/hget (:redis schedule)
+                 (redis/hget (:conn schedule)
                              (jobs/key schedule)
                              "job1"))))
 
