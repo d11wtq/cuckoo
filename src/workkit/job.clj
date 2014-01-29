@@ -21,3 +21,8 @@
   "Computes the WorkKit job ID for the given job payload."
   [payload]
   (digest/sha1 (dump-str payload)))
+
+(defn run
+  "Runs the job in WorkKit payload by applying its fn to its args."
+  [payload]
+  (apply (:job payload) (:args payload)))

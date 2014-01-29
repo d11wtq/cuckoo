@@ -62,4 +62,11 @@
         (is (= {:cron "* * * * * * *"
                 :job #'println
                 :args ["test"]}
-               (job/parse-str payload-str)))))))
+               (job/parse-str payload-str))))))
+
+  (testing "workkit.job/run"
+    (let [payload {:cron "* * * * * * *"
+                   :job #(.toUpperCase %)
+                   :args ["test"]}]
+      (testing "applies fn to args"
+        (is (= "TEST" (job/run payload)))))))
