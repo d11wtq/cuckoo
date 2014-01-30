@@ -1,7 +1,8 @@
 (ns workkit.redis.queue-test
   (:require [workkit.schedule :as schedule]
             [workkit.redis :as redis]
-            [workkit.redis.queue :as queue])
+            [workkit.redis.queue :as queue]
+            [clojure.data.json :as json])
   (:use clojure.test)
   (:import java.util.Date))
 
@@ -21,4 +22,52 @@
                (redis/zrange schedule
                              (queue/key schedule)
                              0 1
-                             :withscores)))))))
+                             :withscores)))))
+
+    (testing "workkit.redis.queue/pop"
+      (letfn [(install-jobs [job-offsets]
+                (redis/flushall schedule)
+                (doseq [[id offset] job-offsets]
+                  (redis/zadd schedule
+                              (queue/key schedule)
+                              (+ offset (.getTime (Date.)))
+                              (json/write-str {:id id}))))]
+
+        (testing "when there are jobs due to run"
+          (install-jobs {"job1" 60000 "job2" -30 "job3" 90000})
+
+          (let [job (queue/pop schedule)]
+            (testing "returns the job with the lowest score"
+              (is (= "job2" (:id job))))
+
+            (testing "includes the run date"
+              (is (<= (.getTime (:date job))
+                      (- (.getTime (Date.)) 30))))
+
+            (testing "removes the first job from the queue"
+              (is (= "{\"id\":\"job1\"}"
+                     (first
+                       (redis/zrange schedule
+                                     (queue/key schedule)
+                                     0 0
+                                     :withscores)))))))
+
+        (testing "when there are no jobs yet due to run"
+          (install-jobs {"job1" 80000 "job2" 90000 "job3" 60000})
+
+          (let [job (queue/pop schedule)]
+            (testing "returns nil"
+              (is (nil? job)))
+
+            (testing "does not modify the queue"
+              (is (= "{\"id\":\"job3\"}"
+                     (first
+                       (redis/zrange schedule
+                                     (queue/key schedule)
+                                     0 0
+                                     :withscores)))))))
+
+        (testing "when the queue is empty"
+          (testing "returns nil"
+            (install-jobs {})
+            (is (nil? (queue/pop schedule)))))))))

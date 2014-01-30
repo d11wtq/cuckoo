@@ -1,6 +1,6 @@
 (ns workkit.redis.queue
   "Impure functions for manipulating the Redis queue key."
-  (:refer-clojure :exclude [key])
+  (:refer-clojure :exclude [key pop])
   (:require [workkit.queue-item :as queue-item]
             [workkit.redis :as redis]))
 
@@ -17,20 +17,25 @@
               (queue-item/dump-score (:date payload))
               (queue-item/dump-str payload)))
 
-;(defn pop*
-;  [schedule]
-;  (let [[queue-item-str score] (redis/multi schedule
-;                                 (redis/zrange (key schedule)
-;                                               0 1
-;                                               :withscores)
-;                                 (redis/zremrangebyrank (key schedule)
-;                                                        0 0))]
-;    (assoc (queue-item/load-str queue-item-str)
-;           :date (queue-item/load-score score))))
-;
-;(defn pop
-;  [schedule]
-;  (let [queue-item (pop* schedule)]
-;    (if (queue-item/before? queue-item (Date.))
-;      queue-item
-;      (and (add schedule queue-item) nil))))
+(defn pop*
+  "Take the first job from the WorkKit queue and return its ID & run date."
+  [schedule]
+  (let [[[queue-item-str score]] (redis/atomic schedule
+                                   (redis/zrange (key schedule)
+                                                 0 0
+                                                 :withscores)
+                                   (redis/zremrangebyrank (key schedule)
+                                                          0 0))]
+    (if (and queue-item-str score)
+      (assoc (queue-item/load-str queue-item-str)
+             :date (queue-item/load-score score)))))
+
+(defn pop
+  "Take the first job from the WorkKit queue and return its ID and run date
+  only if it is due to run. Return nil in all other cases."
+  [schedule]
+  (let [queue-item (pop* schedule)]
+    (if queue-item
+      (if (queue-item/before? queue-item (java.util.Date.))
+        queue-item
+        (and (add schedule queue-item) nil)))))

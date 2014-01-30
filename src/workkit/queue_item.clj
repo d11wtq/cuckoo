@@ -21,3 +21,7 @@
   "Create a java.util.Date instance from an integer formatted as a string."
   [integer]
   (.toDate (clj-time.coerce/from-long (Long. integer))))
+
+(defn before?
+  [payload date]
+  (.before (:date payload) date))
