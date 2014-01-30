@@ -34,8 +34,7 @@
   "Take the first job from the WorkKit queue and return its ID and run date
   only if it is due to run. Return nil in all other cases."
   [schedule]
-  (let [queue-item (pop* schedule)]
-    (if queue-item
-      (if (queue-item/before? queue-item (java.util.Date.))
-        queue-item
-        (and (add schedule queue-item) nil)))))
+  (if-let [queue-item (pop* schedule)]
+    (if (queue-item/before? queue-item (java.util.Date.))
+      queue-item
+      (and (add schedule queue-item) nil))))
