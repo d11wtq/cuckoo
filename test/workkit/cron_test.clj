@@ -67,10 +67,18 @@
                (cron/load-str "1 2 3 4 5"))))))
 
   (testing "workkit.cron/seq"
-    (testing "for the all-wildcard cron string"
+    (testing "for every second"
       (testing "iterates by second"
         (let [start (Date. (- 2014 1900) (dec 2) 1 0 0 0)
               dates (cron/seq "* * * * * * *" start)]
           (is (= (Date. (- 2014 1900) (dec 2) 1 0 0 0) (first dates)))
           (is (= (Date. (- 2014 1900) (dec 2) 1 0 0 2) (nth dates 2)))
-          (is (= (Date. (- 2014 1900) (dec 2) 2 0 0 7) (nth dates 86407))))))))
+          (is (= (Date. (- 2014 1900) (dec 2) 2 0 0 7) (nth dates 86407))))))
+
+    (testing "for every minute"
+      (testing "iterates on the minute"
+        (let [start (Date. (- 2014 1900)  (dec 2) 1 0 0 0)
+              dates (cron/seq "0 * * * * * *" start)]
+          (is (= (Date. (- 2014 1900) (dec 2) 1 0 0 0) (first dates)))
+          (is (= (Date. (- 2014 1900) (dec 2) 1 0 2 0) (nth dates 2)))
+          (is (= (Date. (- 2014 1900) (dec 2) 1 2 7 0) (nth dates 127))))))))
