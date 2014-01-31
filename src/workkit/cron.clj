@@ -1,11 +1,11 @@
 (ns workkit.cron
   "WorkKit cron parsing functions."
+  (:refer-clojure :exclude [seq])
   (:require [clj-time.core :as time]
             [clj-time.local :as local-time])
   (:use [clojure.string :only [split]])
   (:import java.util.Date
            org.joda.time.DateTime))
-
 
 (defn add-default-values
   [values]
@@ -18,6 +18,7 @@
   [value]
   (case value
     "*" \*
+    "?" \*
     (Integer. value)))
 
 (defn parse-numeric-list
@@ -45,3 +46,10 @@
   (or (parse-values (split cron-str #"[ \t]+"))
       (throw (IllegalArgumentException.
                (format "Invalid cron string: %s" cron-str)))))
+
+(defn seq
+  "Return a lazy-seq of all possible dates matched by `cron-str` > `date`."
+  [cron-str date]
+  (take-while
+    (complement nil?)
+    (iterate (fn [d] (Date. (+ 1000 (.getTime d)))) date)))
