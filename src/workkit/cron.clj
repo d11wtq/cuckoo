@@ -14,26 +14,30 @@
     7 values
     nil))
 
-(defn parse-numeric
+(defn parse-numeric-range
   [value]
-  (vec (map #(Integer. %) (split value #","))))
+  (case value
+    "*" \*
+    (Integer. value)))
+
+(defn parse-numeric-list
+  [value]
+  (vec (map parse-numeric-range (split value #","))))
 
 (defn parse-values
   [values]
   (if-let [values (add-default-values values)]
-    (let [parse-fns {:second      parse-numeric
-                     :minute      identity
-                     :hour        identity
-                     :month       identity
-                     :day         identity
-                     :day-of-week identity
-                     :year        identity}]
-      (apply hash-map
-             (flatten
-               (map (fn [value [field parse-fn]]
-                      [field (parse-fn value)])
-                    values
-                    parse-fns))))))
+    (let [parse-fns {:second      parse-numeric-list
+                     :minute      parse-numeric-list
+                     :hour        parse-numeric-list
+                     :month       parse-numeric-list
+                     :day         parse-numeric-list
+                     :day-of-week parse-numeric-list
+                     :year        parse-numeric-list}]
+      (reduce merge (map (fn [value [field parse-fn]]
+                           {field (parse-fn value)})
+                         values
+                         parse-fns)))))
 
 (defn load-str
   "Parse a cron string into a structured map of its component parts."

@@ -14,8 +14,10 @@
                       :hour
                       :minute
                       :second}
-                    (keys (cron/load-str "* * * * *")))))
+                    (keys (cron/load-str "1 2 3 4 5")))))
 
       (testing "sets the :second to zero"
-        (is (= [0]
-               (:second (cron/load-str "* * * * *"))))))))
+        (is (= [0] (:second (cron/load-str "1 2 3 4 5")))))
+
+      (testing "sets the year to *"
+        (is (= [\*] (:year (cron/load-str "1 2 3 4 5"))))))))
