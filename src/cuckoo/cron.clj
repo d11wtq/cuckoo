@@ -20,10 +20,12 @@
 (defn advance-date
   "Returns the `date-map` with the first field of `fields` incremented by 1,
   and the less signficant fields rolled over to their base (minimum) values."
-  [date-map [field & rest]]
-  (let [current-value (field date-map)]
-    (reset-date-fields (merge date-map {field (inc current-value)})
-                       rest)))
+  ([date-map]
+   (advance-date date-map [:second]))
+  ([date-map [field & rest]]
+   (let [current-value (field date-map)]
+     (reset-date-fields (merge date-map {field (inc current-value)})
+                        rest))))
 
 (defn validate-or-advance
   "Helper used by `next-date*` to either return the input date, or force
@@ -94,5 +96,12 @@
       (date/map->date date-map))))
 
 (defn seq
-  "Return a lazy-seq of all possible dates matched by `cron-str` >= `date`."
-  [cron-str date])
+  "Returns a lazy-seq of all possible dates matched by `cron-str` >= `date`."
+  [cron-str date]
+  (take-while
+    (complement nil?)
+    (iterate
+      (fn [prev]
+        (let [next-tick (advance-date (date/date->map prev))]
+          (next-date cron-str (date/map->date next-tick))))
+      (next-date cron-str date))))
