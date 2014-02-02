@@ -1,5 +1,5 @@
 (defproject cuckoo "0.1.0-SNAPSHOT"
-  :description "Cuckoo - Distributed scheduling & queuing for Clojure"
+  :description "Cuckoo - Distributed scheduling & queueing for Clojure"
   :url "https://github.com/d11wtq/cuckoo"
   :license {:name "MIT License"
             :url "http://opensource.org/licenses/MIT"}
