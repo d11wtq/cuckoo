@@ -1,21 +1,21 @@
-(ns workkit.redis.jobs-test
-  (:require [workkit.schedule :as schedule]
-            [workkit.job :as job]
-            [workkit.redis :as redis]
-            [workkit.redis.jobs :as jobs])
+(ns cuckoo.redis.jobs-test
+  (:require [cuckoo.schedule :as schedule]
+            [cuckoo.job :as job]
+            [cuckoo.redis :as redis]
+            [cuckoo.redis.jobs :as jobs])
   (:use clojure.test))
 
 (deftest jobs-test
   (let [schedule (schedule/create "test" {:uri (System/getenv "REDIS_URI")})
         payload {:cron "* * * * * * *" :job #'println :args ["test"]}]
 
-    (testing "workkit.redis.jobs/key"
+    (testing "cuckoo.redis.jobs/key"
       (testing "uses the schedule name as a prefix"
         (redis/flushall schedule)
         (is (= "test:jobs"
                (jobs/key schedule)))))
 
-    (testing "workkit.redis.jobs/add"
+    (testing "cuckoo.redis.jobs/add"
       (testing "for a non-existing job"
         (testing "adds the payload to a redis hash"
           (redis/flushall schedule)
@@ -44,7 +44,7 @@
           (jobs/add schedule "testjob" payload)
           (is (false? (jobs/add schedule "testjob" payload))))))
 
-    (testing "workkit.redis.jobs/fetch"
+    (testing "cuckoo.redis.jobs/fetch"
       (testing "for a job that exists"
         (testing "returns the job payload"
           (redis/flushall schedule)

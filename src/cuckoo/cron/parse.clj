@@ -1,5 +1,5 @@
-(ns workkit.cron.parse
-  "WorkKit cron parsing functions to convert cron strings to maps of sets."
+(ns cuckoo.cron.parse
+  "Cuckoo cron parsing functions to convert cron strings to maps of sets."
   (:require clojure.set)
   (:use [clojure.string :only [split]])
   (:import java.util.Date

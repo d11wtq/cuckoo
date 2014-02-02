@@ -1,7 +1,7 @@
-(ns workkit.cron
-  "WorkKit cron parsing functions."
+(ns cuckoo.cron
+  "Cuckoo cron parsing functions."
   (:refer-clojure :exclude [seq])
-  (:use [workkit.cron.parse :only [parse]]
+  (:use [cuckoo.cron.parse :only [parse]]
         [clojure.string :only [split]])
   (:import java.util.Date))
 

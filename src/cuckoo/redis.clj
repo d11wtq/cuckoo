@@ -1,4 +1,4 @@
-(ns workkit.redis
+(ns cuckoo.redis
   "Functions for talking to Redis with some basic abstraction."
   (:require [taoensso.carmine :as carmine]))
 

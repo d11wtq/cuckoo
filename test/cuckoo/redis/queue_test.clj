@@ -1,7 +1,7 @@
-(ns workkit.redis.queue-test
-  (:require [workkit.schedule :as schedule]
-            [workkit.redis :as redis]
-            [workkit.redis.queue :as queue]
+(ns cuckoo.redis.queue-test
+  (:require [cuckoo.schedule :as schedule]
+            [cuckoo.redis :as redis]
+            [cuckoo.redis.queue :as queue]
             [clojure.data.json :as json])
   (:use clojure.test)
   (:import java.util.Date))
@@ -9,12 +9,12 @@
 (deftest queue-test
   (let [schedule (schedule/create "test" {:uri (System/getenv "REDIS_URI")})]
 
-    (testing "workkit.redis.queue/key"
+    (testing "cuckoo.redis.queue/key"
       (testing "uses the schedule name as a prefix"
         (is (= "test:next"
                (queue/key schedule)))))
 
-    (testing "workkit.redis.queue/add"
+    (testing "cuckoo.redis.queue/add"
       (testing "adds id to a sorted set using date as score"
         (redis/flushall schedule)
         (queue/add schedule {:id "test" :date (Date. (- 2014 1900) 0 1)})
@@ -24,7 +24,7 @@
                              0 1
                              :withscores)))))
 
-    (testing "workkit.redis.queue/pop"
+    (testing "cuckoo.redis.queue/pop"
       (letfn [(install-jobs [job-offsets]
                 (redis/flushall schedule)
                 (doseq [[id offset] job-offsets]

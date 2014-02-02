@@ -1,11 +1,11 @@
-(ns workkit.redis.queue
+(ns cuckoo.redis.queue
   "Impure functions for manipulating the Redis queue key."
   (:refer-clojure :exclude [key pop])
-  (:require [workkit.queue-item :as queue-item]
-            [workkit.redis :as redis]))
+  (:require [cuckoo.queue-item :as queue-item]
+            [cuckoo.redis :as redis]))
 
 (defn key
-  "Returns the name of the redis key for the WorkKit schedule queue."
+  "Returns the name of the redis key for the Cuckoo schedule queue."
   [schedule]
   (format "%s:next" (:name schedule)))
 
@@ -18,7 +18,7 @@
               (queue-item/dump-str payload)))
 
 (defn pop*
-  "Take the first job from the WorkKit queue and return its ID & run date."
+  "Take the first job from the Cuckoo queue and return its ID & run date."
   [schedule]
   (let [[[queue-item-str score]] (redis/atomic schedule
                                    (redis/zrange (key schedule)
@@ -31,7 +31,7 @@
              :date (queue-item/load-score score)))))
 
 (defn pop
-  "Take the first job from the WorkKit queue and return its ID and run date
+  "Take the first job from the Cuckoo queue and return its ID and run date
   only if it is due to run. Return nil in all other cases."
   [schedule]
   (if-let [queue-item (pop* schedule)]

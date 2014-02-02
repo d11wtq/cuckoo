@@ -1,15 +1,15 @@
-(ns workkit.queue-item
-  "WorkKit queued job handling functions."
+(ns cuckoo.queue-item
+  "Cuckoo queued job handling functions."
   (:require [clojure.data.json :as json]
             clj-time.coerce))
 
 (defn dump-str
-  "Dump a WorkKit queued job json payload from a Clojure map."
+  "Dump a Cuckoo queued job json payload from a Clojure map."
   [payload]
   (json/write-str (dissoc payload :date)))
 
 (defn load-str
-  "Parse a WorkKit queued job json payload to a Clojure map."
+  "Parse a Cuckoo queued job json payload to a Clojure map."
   [payload-str]
   (json/read-str payload-str :key-fn keyword))
 

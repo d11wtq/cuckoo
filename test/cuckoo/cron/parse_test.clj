@@ -1,6 +1,6 @@
-(ns workkit.cron.parse-test
+(ns cuckoo.cron.parse-test
   (:use clojure.test
-        [workkit.cron.parse :only [parse]])
+        [cuckoo.cron.parse :only [parse]])
   (:import java.util.Date))
 
 (deftest parse-test

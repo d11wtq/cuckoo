@@ -1,9 +1,9 @@
-(ns workkit.job-test
-  (:require [workkit.job :as job])
+(ns cuckoo.job-test
+  (:require [cuckoo.job :as job])
   (:use clojure.test))
 
 (deftest job-test
-  (testing "workkit.job/id"
+  (testing "cuckoo.job/id"
     (testing "is alphanumeric"
       (is (re-find #"^[a-z0-9]+$"
                    (job/id {:cron "* * * * * * *"
@@ -42,7 +42,7 @@
                          :job #'println
                          :args ["bar"]})))))
 
-  (testing "workkit.job/dump-str"
+  (testing "cuckoo.job/dump-str"
     (let [payload {:cron "* * * * * * *"
                    :job #'println
                    :args ["test"]}]
@@ -53,7 +53,7 @@
                        "[\"test\"]")
                (job/dump-str payload))))))
 
-  (testing "workkit.job/load-str"
+  (testing "cuckoo.job/load-str"
     (let [payload-str (format "{\"cron\":\"%s\",\"job\":\"%s\",\"args\":%s}"
                               "* * * * * * *"
                               "#'clojure.core\\/println"
@@ -64,7 +64,7 @@
                 :args ["test"]}
                (job/load-str payload-str))))))
 
-  (testing "workkit.job/run"
+  (testing "cuckoo.job/run"
     (let [payload {:cron "* * * * * * *"
                    :job #(.toUpperCase %)
                    :args ["test"]}]
