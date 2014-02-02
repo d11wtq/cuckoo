@@ -78,8 +78,7 @@
                           :minute
                           :second]))
   ([cron-map date-map fields]
-   (if (empty? fields)
-     true
+   (or (empty? fields)
      (let [[field & rest] fields
            value (field date-map)
            allow (field cron-map)]
