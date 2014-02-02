@@ -1,10 +1,8 @@
 (ns cuckoo.cron
-  "Cuckoo cron parsing functions."
+  "Cuckoo cron handling and sequencing functions."
   (:refer-clojure :exclude [seq])
-  (:require [cuckoo.cron.parse :as parse]
-            [cuckoo.date :as date])
-  (:import java.util.Date
-           java.util.Calendar))
+  (:use [cuckoo.cron.parse :only [parse]])
+  (:require [cuckoo.date :as date]))
 
 (defn field-match?
   "Returns true if the date field value is present in the same cron set."
@@ -54,7 +52,7 @@
 
   Used by `date-map` in a trampoline recursive call."
   [cron-str date]
-  (validate-or-advance (parse/parse cron-str date)
+  (validate-or-advance (parse cron-str date)
                        (date/date->map date)
                        #(next-date* cron-str (date/map->date %))
                        [:year
@@ -69,7 +67,7 @@
 
   This means it must contain a date in the future from `date`."
   ([cron-str date]
-   (possible-next-match? (parse/parse cron-str date)
+   (possible-next-match? (parse cron-str date)
                          (date/date->map date)
                          [:year
                           :month
