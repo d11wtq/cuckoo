@@ -1,4 +1,6 @@
-# Cuckoo - Distributed cron & queueing for Clojure
+# Cuckoo
+
+## Distributed scheduling & queueing for Clojure
 
 Coming soon.
 
