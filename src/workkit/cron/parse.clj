@@ -1,17 +1,19 @@
 (ns workkit.cron.parse
-  "WorkKit cron parsing functions."
+  "WorkKit cron parsing functions to convert cron strings to maps of sets."
   (:require clojure.set)
   (:use [clojure.string :only [split]])
   (:import java.util.Date
            java.util.Calendar))
 
 (defn last-day-of-month
+  "Returns the last possible day of the month given by `date`."
   [date]
   (let [c (Calendar/getInstance)]
     (.setTime c date)
     (.getActualMaximum c Calendar/DAY_OF_MONTH)))
 
 (defn min-value
+  "Returns the minimum value for cron `field` in the context of `date`."
   [field date]
   (case field
     :second      0
@@ -23,6 +25,7 @@
     :year        1970))
 
 (defn max-value
+  "Returns the maximum value for cron `field` in the context of `date`."
   [field date]
   (case field
     :second      59
@@ -34,21 +37,25 @@
     :year        2099))
 
 (defn parse-integer
+  "Parse a single integer string into a set."
   [field value date]
   (try
     #{(Integer. value)}
     (catch NumberFormatException e)))
 
+;; FIXME: Clean this up
 (defn parse-range
+  "Parse a cron format range (with optional step) into a set."
   [field value date]
   (if (re-find #"^\d+-\d+(/\d+)?$" value)
     (let [parts (zipmap [:range :step] (split value #"/"))
           bounds (split (:range parts) #"-")]
-      (range (Integer. (nth bounds 0))
-             (inc (Integer. (nth bounds 1)))
-             (Integer. (or (:step parts) 1))))))
+      (set (range (Integer. (nth bounds 0))
+                  (inc (Integer. (nth bounds 1)))
+                  (Integer. (or (:step parts) 1)))))))
 
 (defn parse-wildcard
+  "Parse a cron format wildcard (with optional step) into a set."
   [field value date]
   (parse-range
     field
@@ -61,35 +68,38 @@
                 (max-value field date))))
     date))
 
+(declare parse-value)
+(defn parse-list
+  "Parse a comma separated list of values into a single set."
+  [field value date]
+  (if (re-find #"," value)
+    (reduce clojure.set/union
+            (map #(set (parse-value field % date))
+                 (split value #",")))))
+
 (defn parse-value
+  "Parse a value from a cron field into a set."
   [field value date]
   (first
     (filter (complement nil?)
             (map #(% field value date)
-                 [parse-wildcard
+                 [parse-list
+                  parse-wildcard
                   parse-range
                   parse-integer]))))
 
-(defn parse-value-list
-  [field value-list date]
-  (reduce clojure.set/union
-          (map #(set (parse-value field % date))
-               (split value-list #","))))
-
-(defn parse-fields
+(defn expand
+  "Expand each field in `cron-map` to a set and return the new map."
   [cron-map date]
   (reduce (fn [acc [field value]]
-            (assoc acc
-                   field
-                   (parse-value-list field value date)))
-          {}
-          cron-map))
+            (merge acc {field (parse-value field value date)}))
+          {} cron-map))
 
 (defn parse
   "Parse the given cron string to a specification based on simple sets, using
   `date` as the context for L,W,* etc."
   [cron-str date]
-  (parse-fields
+  (expand
     (zipmap [:second
              :minute
              :hour
