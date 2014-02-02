@@ -1,6 +1,7 @@
 (ns workkit.queue-item
   "WorkKit queued job handling functions."
-  (:require [clojure.data.json :as json]))
+  (:require [clojure.data.json :as json]
+            clj-time.coerce))
 
 (defn dump-str
   "Dump a WorkKit queued job json payload from a Clojure map."
