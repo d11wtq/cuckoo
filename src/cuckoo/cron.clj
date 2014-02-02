@@ -1,40 +1,13 @@
 (ns cuckoo.cron
   "Cuckoo cron parsing functions."
   (:refer-clojure :exclude [seq])
-  (:require [cuckoo.cron.parse :as parse])
+  (:require [cuckoo.cron.parse :as parse]
+            [cuckoo.date :as date])
   (:import java.util.Date
            java.util.Calendar))
 
-(def date-fields
-  "Lookup table for transforming between java.util.Date and an internal map."
-  [[:year        Calendar/YEAR         0]
-   [:month       Calendar/MONTH        1]
-   [:day         Calendar/DAY_OF_MONTH 0]
-   ;[:day-of-week Calendar/DAY_OF_WEEK  0] FIXME: Need to canonicalize to :day
-   [:hour        Calendar/HOUR_OF_DAY  0]
-   [:minute      Calendar/MINUTE       0]
-   [:second      Calendar/SECOND       0]])
-
-(defn date->map
-  "Converts a java.util.Date into a Clojure map of fields."
-  [date]
-  (let [calendar (doto (Calendar/getInstance)
-                   (.setTime date))]
-    (reduce (fn [acc [field java-field offset]]
-              (merge acc {field (+ (.get calendar java-field) offset)}))
-            {} date-fields)))
-
-(defn map->date
-  "Converts a Clojure map of fields to a java.util.Date."
-  [map]
-  (let [calendar (doto (Calendar/getInstance)
-                   (.set Calendar/MILLISECOND 0))]
-    (doseq [[field java-field offset] date-fields]
-      (.set calendar java-field (- (field map) offset)))
-    (.getTime calendar)))
-
 (defn field-match?
-  "Returns true if the date "
+  "Returns true if the date field value is present in the same cron set."
   [field cron-map date-map]
   ((field cron-map) (field date-map)))
 
@@ -42,7 +15,7 @@
   "Sets all `fields` in `date-map` to their minimum possible values."
   [date-map fields]
   (reduce (fn [acc field]
-            (merge acc {field (parse/min-value field nil)}))
+            (merge acc {field (date/min-value field)}))
           date-map
           fields))
 
@@ -82,8 +55,8 @@
   Used by `date-map` in a trampoline recursive call."
   [cron-str date]
   (validate-or-advance (parse/parse cron-str date)
-                       (date->map date)
-                       #(next-date* cron-str (map->date %))
+                       (date/date->map date)
+                       #(next-date* cron-str (date/map->date %))
                        [:year
                         :month
                         :day
@@ -96,14 +69,14 @@
 
   This means it must contain a date in the future from `date`."
   ([cron-str date]
-   (possible-match? (parse/parse cron-str date)
-                    (date->map date)
-                    [:year
-                     :month
-                     :day
-                     :hour
-                     :minute
-                     :second]))
+   (possible-next-match? (parse/parse cron-str date)
+                         (date/date->map date)
+                         [:year
+                          :month
+                          :day
+                          :hour
+                          :minute
+                          :second]))
   ([cron-map date-map fields]
    (if (empty? fields)
      true
@@ -121,7 +94,7 @@
   [cron-str date]
   (if (possible-next-match? cron-str date)
     (if-let [date-map (trampoline next-date* cron-str date)]
-      (map->date date-map))))
+      (date/map->date date-map))))
 
 (defn seq
   "Return a lazy-seq of all possible dates matched by `cron-str` >= `date`."

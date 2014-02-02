@@ -1,40 +1,10 @@
 (ns cuckoo.cron.parse
   "Cuckoo cron parsing functions to convert cron strings to maps of sets."
-  (:require clojure.set)
+  (:require clojure.set
+            [cuckoo.date :as date])
   (:use [clojure.string :only [split]])
   (:import java.util.Date
            java.util.Calendar))
-
-(defn last-day-of-month
-  "Returns the last possible day of the month given by `date`."
-  [date]
-  (let [c (Calendar/getInstance)]
-    (.setTime c date)
-    (.getActualMaximum c Calendar/DAY_OF_MONTH)))
-
-(defn min-value
-  "Returns the minimum value for cron `field` in the context of `date`."
-  [field date]
-  (case field
-    :second      0
-    :minute      0
-    :hour        0
-    :month       1
-    :day         1
-    :day-of-week 0
-    :year        1970))
-
-(defn max-value
-  "Returns the maximum value for cron `field` in the context of `date`."
-  [field date]
-  (case field
-    :second      59
-    :minute      59
-    :hour        23
-    :month       12
-    :day         (last-day-of-month date)
-    :day-of-week 6
-    :year        2099))
 
 (defn parse-integer
   "Parse a single integer string into a set."
@@ -64,8 +34,8 @@
       #"\*"
       (fn [_]
         (format "%d-%d"
-                (min-value field date)
-                (max-value field date))))
+                (date/min-value field date)
+                (date/max-value field date))))
     date))
 
 (declare parse-value)
