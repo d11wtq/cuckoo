@@ -1,8 +1,8 @@
 # Cuckoo
 
-## Distributed scheduling & queueing for Clojure
+Distributed scheduling &amp; queueing for Clojure
 
-Coming soon.
+> Coming soon.
 
 
 ## License
