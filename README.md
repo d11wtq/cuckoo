@@ -11,6 +11,7 @@ Distributed scheduling &amp; queueing for Clojure
 
   * [Issue Tracker](https://github.com/d11wtq/cuckoo/issues)
   * [Trello Board](https://trello.com/b/NNUNObF1/cuckoo)
+  * [CI Builds](http://travis-ci.org/d11wtq/cuckoo)
 
 
 ## License
