@@ -6,6 +6,9 @@ Distributed scheduling &amp; queueing for Clojure
 
 > Coming soon.
 
+  * Issues - https://github.com/d11wtq/cuckoo/issues
+  * Trello - https://trello.com/b/NNUNObF1/cuckoo
+
 
 ## License
 
