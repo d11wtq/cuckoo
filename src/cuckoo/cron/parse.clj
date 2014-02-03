@@ -65,6 +65,18 @@
             (merge acc {field (parse-value field value date)}))
           {} cron-map))
 
+(defn normalize-field-count
+  "Accepts 5, 6 or 7 component cron field values and normalizes to 7."
+  [values]
+  (let [num-values (count values)]
+    (case num-values
+      7 values
+      6 (conj values "*")
+      5 (recur (into ["0"] values))
+      (throw (IllegalArgumentException.
+               (format "Incorrect number of cron fields: %d"
+                       num-values))))))
+
 (defn parse
   "Parse the given cron string to a specification based on simple sets, using
   `date` as the context for L,W,* etc."
@@ -77,5 +89,5 @@
              :day
              :day-of-week
              :year]
-            (split cron-str #"[ \t]+"))
+            (normalize-field-count (split cron-str #"[ \t]+")))
     date))

@@ -96,4 +96,26 @@
               :minute      (set (range 0 60))
               :second      #{0 10 20 30 40 50}}
              (parse "*/10 * 3-5,17,19 * */2 * 2014-2017"
-                    (Date. (- 2014 1900) 0 1)))))))
+                    (Date. (- 2014 1900) 0 1))))))
+
+  (testing "with a 6-component cron"
+    (testing "uses seconds as first field and sets the year to the full range"
+      (is (= {:year        (set (range 1970 2100))
+              :month       #{7 8}
+              :day         #{9 10}
+              :day-of-week #{0 1}
+              :hour        #{5 6}
+              :minute      #{3 4}
+              :second      #{1 2}}
+             (parse "1,2 3,4 5,6 7,8 9,10 0,1" (Date. (- 2014 1900) 0 1))))))
+
+  (testing "with a traditional 5-component cron"
+    (testing "sets second to zero and the year to the full range"
+      (is (= {:year        (set (range 1970 2100))
+              :month       #{5 6}
+              :day         #{7 8}
+              :day-of-week #{0 1}
+              :hour        #{3 4}
+              :minute      #{1 2}
+              :second      #{0}}
+             (parse "1,2 3,4 5,6 7,8 0,1" (Date. (- 2014 1900) 0 1)))))))
