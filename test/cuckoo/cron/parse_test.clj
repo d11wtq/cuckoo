@@ -118,4 +118,10 @@
               :hour        #{3 4}
               :minute      #{1 2}
               :second      #{0}}
-             (parse "1,2 3,4 5,6 7,8 0,1" (Date. (- 2014 1900) 0 1)))))))
+             (parse "1,2 3,4 5,6 7,8 0,1" (Date. (- 2014 1900) 0 1))))))
+
+  (testing "with too few cron fields throws IllegalArgumentException"
+    (is (thrown? IllegalArgumentException (parse "* * * *"))))
+
+  (testing "with too many cron fields throws IllegalArgumentException"
+    (is (thrown? IllegalArgumentException (parse "* * * * * * * *")))))
