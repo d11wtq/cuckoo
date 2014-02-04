@@ -26,6 +26,11 @@
                   (inc (Integer. (nth bounds 1)))
                   (Integer. (or (:step parts) 1)))))))
 
+(defn parse-blank
+  "Parse a '?' to just return the empty set."
+  [field value date]
+  (if (= "?" value) #{}))
+
 (defn parse-wildcard
   "Parse a cron format wildcard (with optional step) into a set."
   [field value date]
@@ -68,17 +73,48 @@
     (filter (complement nil?)
             (map #(% field value date)
                  [parse-list
-                  parse-L
+                  parse-blank
                   parse-wildcard
+                  parse-L
                   parse-range
                   parse-integer]))))
+
+(defn normalize-wildcards
+  "Translates '*' to '?' on the cron date fields."
+  [cron-map]
+  (reduce (fn [acc k]
+            (if (= "*" (k acc))
+              (merge acc {k "?"})
+              acc))
+          cron-map
+          [:day :day-of-week]))
+
+(defn normalize-day-fields
+  "Enable/disable one of the day of month or day of week fields, if needed.
+
+  Cron is only complicated by the interpretation of these two fields. If both
+  contain non-asterisk values, either may match (union). If only one contains
+  non-asterisk values, it must match, but the other is ignored. If both fields
+  are set to asterisk, all days in the month are counted.
+
+  We do some juggling between '?' (ignored) and '*' (all values) by first
+  replacing '*' with '?', then checking if both fields are ignored. If they
+  are, we enable just the day of month field."
+  [cron-map]
+  (let [normalized-map (normalize-wildcards cron-map)]
+    (if (and (= "?" (:day-of-week normalized-map))
+             (= "?" (:day normalized-map)))
+      (merge normalized-map {:day "*"})
+      normalized-map)))
 
 (defn expand
   "Expand each field in `cron-map` to a set and return the new map."
   [cron-map date]
   (reduce (fn [acc [field value]]
-            (merge acc {field (parse-value field value date)}))
-          {} cron-map))
+            (merge acc
+                   {field (parse-value field value date)}))
+          {}
+          (normalize-day-fields cron-map)))
 
 (defn normalize-field-count
   "Accepts 5, 6 or 7 component cron field values and normalizes to 7."

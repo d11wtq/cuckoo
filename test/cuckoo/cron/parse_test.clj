@@ -10,7 +10,7 @@
         (is (= {:year        (set (range 1970 2100))
                 :month       (set (range 1 13))
                 :day         (set (range 1 32))
-                :day-of-week (set (range 0 7))
+                :day-of-week #{}
                 :hour        (set (range 0 24))
                 :minute      (set (range 0 60))
                 :second      (set (range 0 60))}
@@ -87,6 +87,12 @@
                (:day (parse "* * * * */4 * *"
                             (Date. (- 2016 1900) 1 1)))))))
 
+    (testing "with a single day-of-week integer"
+      (testing "expands to the equivalent days of month"
+        (is (= #{2 9 16 23}
+               (:day (parse "* * * * * 0 *"
+                            (Date. (- 2014 1900) 1 1)))))))
+
     (testing "with L in the day field"
       (testing "as a single value"
         (testing "expands to the last day of the month"
@@ -113,7 +119,7 @@
       (is (= {:year        #{2014 2015 2016 2017}
               :month       #{1 2 3 4 5 6 7 8 9 10 11 12}
               :day         #{1 3 5 7 9 20 23 26 29}
-              :day-of-week #{0 1 2 3 4 5 6}
+              :day-of-week #{}
               :hour        #{3 4 5 17 19}
               :minute      (set (range 0 60))
               :second      #{0 10 20 30 40 50}}
