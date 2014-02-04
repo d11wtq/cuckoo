@@ -79,6 +79,19 @@
                   parse-range
                   parse-integer]))))
 
+(defn days-of-week->days-of-month
+  [days-of-week date]
+  (let [day1 (date/first-week-day-of-month date)]
+    (reduce (fn [acc day]
+              ;; 1st = Tuesday (2), targeting Monday (1)
+              ;;  * Ugh, brain melting
+              (into acc
+                    (range (inc (+ day (Math/abs (- day day1))))
+                           (inc (date/last-day-of-month date))
+                           7)))
+            #{}
+            days-of-week)))
+
 (defn normalize-wildcards
   "Translates '*' to '?' on the cron date fields."
   [cron-map]
@@ -107,14 +120,28 @@
       (merge normalized-map {:day "*"})
       normalized-map)))
 
-(defn expand
-  "Expand each field in `cron-map` to a set and return the new map."
+(defn expand-raw
+  "Literally expand each field into the basic numeric values.
+
+  This basically does not consider the union between :day and :day-of-week."
   [cron-map date]
   (reduce (fn [acc [field value]]
             (merge acc
                    {field (parse-value field value date)}))
           {}
           (normalize-day-fields cron-map)))
+
+(defn expand
+  "Expand each field in `cron-map` to a set and return the new map."
+  [cron-map date]
+  (let [raw-values (expand-raw cron-map date)]
+    (dissoc
+      (merge raw-values
+             {:day (into (:day raw-values)
+                         (days-of-week->days-of-month
+                           (:day-of-week raw-values)
+                           date))})
+      :day-of-week)))
 
 (defn normalize-field-count
   "Accepts 5, 6 or 7 component cron field values and normalizes to 7."

@@ -5,12 +5,12 @@
 
 (def fields
   "Lookup table for transforming between java.util.Date and an internal map."
-  [[:year        Calendar/YEAR         0]
-   [:month       Calendar/MONTH        1]
-   [:day         Calendar/DAY_OF_MONTH 0]
-   [:hour        Calendar/HOUR_OF_DAY  0]
-   [:minute      Calendar/MINUTE       0]
-   [:second      Calendar/SECOND       0]])
+  [[:year        Calendar/YEAR          0]
+   [:month       Calendar/MONTH         1]
+   [:day         Calendar/DAY_OF_MONTH  0]
+   [:hour        Calendar/HOUR_OF_DAY   0]
+   [:minute      Calendar/MINUTE        0]
+   [:second      Calendar/SECOND        0]])
 
 (defn date->map
   "Converts a java.util.Date into a Clojure map of fields."
@@ -30,12 +30,23 @@
       (.set calendar java-field (- (field map) offset)))
     (.getTime calendar)))
 
+(defn first-week-day-of-month
+  "Get the day of week at the start of this month."
+  [date]
+  (dec
+    (.get
+      (doto (Calendar/getInstance)
+        (.setTime date)
+        (.set Calendar/DAY_OF_MONTH 1))
+      Calendar/DAY_OF_WEEK)))
+
 (defn last-day-of-month
   "Returns the last possible day of the month given by `date`."
   [date]
-  (let [c (Calendar/getInstance)]
-    (.setTime c date)
-    (.getActualMaximum c Calendar/DAY_OF_MONTH)))
+  (.getActualMaximum
+    (doto (Calendar/getInstance)
+      (.setTime date))
+    Calendar/DAY_OF_MONTH))
 
 (defn max-value
   "Returns the maximum value for cron `field` in the context of `date`."

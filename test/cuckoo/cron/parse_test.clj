@@ -10,7 +10,6 @@
         (is (= {:year        (set (range 1970 2100))
                 :month       (set (range 1 13))
                 :day         (set (range 1 32))
-                :day-of-week #{}
                 :hour        (set (range 0 24))
                 :minute      (set (range 0 60))
                 :second      (set (range 0 60))}
@@ -119,7 +118,6 @@
       (is (= {:year        #{2014 2015 2016 2017}
               :month       #{1 2 3 4 5 6 7 8 9 10 11 12}
               :day         #{1 3 5 7 9 20 23 26 29}
-              :day-of-week #{}
               :hour        #{3 4 5 17 19}
               :minute      (set (range 0 60))
               :second      #{0 10 20 30 40 50}}
@@ -130,8 +128,7 @@
     (testing "uses seconds as first field and sets the year to the full range"
       (is (= {:year        (set (range 1970 2100))
               :month       #{7 8}
-              :day         #{9 10}
-              :day-of-week #{0 1}
+              :day         #{5 6 12 13 19 20 26 27 9 10}
               :hour        #{5 6}
               :minute      #{3 4}
               :second      #{1 2}}
@@ -141,8 +138,7 @@
     (testing "sets second to zero and the year to the full range"
       (is (= {:year        (set (range 1970 2100))
               :month       #{5 6}
-              :day         #{7 8}
-              :day-of-week #{0 1}
+              :day         #{5 6 12 13 19 20 26 27 7 8}
               :hour        #{3 4}
               :minute      #{1 2}
               :second      #{0}}
