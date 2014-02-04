@@ -6,6 +6,8 @@
   (:import java.util.Date
            java.util.Calendar))
 
+(declare parse-value)
+
 (defn parse-integer
   "Parse a single integer string into a set."
   [field value date]
@@ -27,18 +29,18 @@
 (defn parse-wildcard
   "Parse a cron format wildcard (with optional step) into a set."
   [field value date]
-  (parse-range
-    field
-    (clojure.string/replace
-      value
-      #"\*"
-      (fn [_]
-        (format "%d-%d"
-                (date/min-value field date)
-                (date/max-value field date))))
-    date))
+  (if (re-find #"\*" value)
+    (parse-value
+      field
+      (clojure.string/replace
+        value
+        #"\*"
+        (fn [_]
+          (format "%d-%d"
+                  (date/min-value field date)
+                  (date/max-value field date))))
+      date)))
 
-(declare parse-value)
 (defn parse-list
   "Parse a comma separated list of values into a single set."
   [field value date]
@@ -47,6 +49,18 @@
             (map #(set (parse-value field % date))
                  (split value #",")))))
 
+(defn parse-L
+  "Parse out L in the day of month field."
+  [field value date]
+  (if (and (= :day field) (re-find #"L" value))
+    (parse-value
+      field
+      (clojure.string/replace
+        value
+        #"L"
+        (fn [_] (str (date/max-value field date))))
+      date)))
+
 (defn parse-value
   "Parse a value from a cron field into a set."
   [field value date]
@@ -54,6 +68,7 @@
     (filter (complement nil?)
             (map #(% field value date)
                  [parse-list
+                  parse-L
                   parse-wildcard
                   parse-range
                   parse-integer]))))

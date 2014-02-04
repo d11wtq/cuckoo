@@ -87,15 +87,37 @@
                (:day (parse "* * * * */4 * *"
                             (Date. (- 2016 1900) 1 1)))))))
 
+    (testing "with L in the day field"
+      (testing "as a single value"
+        (testing "expands to the last day of the month"
+          (is (= #{28} (:day (parse "* * * * L * *"
+                                    (Date. (- 2014 1900) 1 1)))))
+          (is (= #{29} (:day (parse "* * * * L * *"
+                                    (Date. (- 2016 1900) 1 1)))))))
+
+      (testing "as part of a list"
+        (testing "expands to the last day of the month in the list"
+          (is (= #{1 15 28} (:day (parse "* * * * 1,15,L * *"
+                                         (Date. (- 2014 1900) 1 1)))))
+          (is (= #{1 15 29} (:day (parse "* * * * 1,15,L * *"
+                                         (Date. (- 2016 1900) 1 1)))))))
+
+      (testing "as part of a range"
+        (testing "expands to the last day of the month in the range"
+          (is (= (set (range 15 29))
+                 (:day (parse "* * * * 15-L * *" (Date. (- 2014 1900) 1 1)))))
+          (is (= (set (range 15 30))
+                 (:day (parse "* * * * 15-L * *" (Date. (- 2016 1900) 1 1))))))))
+
     (testing "parsing a complex string"
       (is (= {:year        #{2014 2015 2016 2017}
               :month       #{1 2 3 4 5 6 7 8 9 10 11 12}
-              :day         #{1 3 5 7 9 11 13 15 17 19 21 23 25 27 29 31}
+              :day         #{1 3 5 7 9 20 23 26 29}
               :day-of-week #{0 1 2 3 4 5 6}
               :hour        #{3 4 5 17 19}
               :minute      (set (range 0 60))
               :second      #{0 10 20 30 40 50}}
-             (parse "*/10 * 3-5,17,19 * */2 * 2014-2017"
+             (parse "*/10 * 3-5,17,19 * 1-10/2,20-L/3 * 2014-2017"
                     (Date. (- 2014 1900) 0 1))))))
 
   (testing "with a 6-component cron"
