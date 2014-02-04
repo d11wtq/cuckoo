@@ -83,10 +83,8 @@
   [days-of-week date]
   (let [day1 (date/first-week-day-of-month date)]
     (reduce (fn [acc day]
-              ;; 1st = Tuesday (2), targeting Monday (1)
-              ;;  * Ugh, brain melting
               (into acc
-                    (range (inc (+ day (Math/abs (- day day1))))
+                    (range (inc (mod (+ 7 (- day day1)) 7))
                            (inc (date/last-day-of-month date))
                            7)))
             #{}
