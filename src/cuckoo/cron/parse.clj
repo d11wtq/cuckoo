@@ -1,7 +1,6 @@
 (ns cuckoo.cron.parse
   "Cuckoo cron parsing functions to convert cron strings to maps of sets."
-  (:require clojure.set
-            [cuckoo.date :as date])
+  (:require [cuckoo.date :as date])
   (:use [clojure.string :only [split]])
   (:import java.util.Date
            java.util.Calendar))
@@ -15,24 +14,25 @@
     #{(Integer. value)}
     (catch NumberFormatException e)))
 
-;; FIXME: Clean this up
 (defn parse-range
   "Parse a cron format range (with optional step) into a set."
   [field value date]
-  (if (re-find #"^\d+-\d+(/\d+)?$" value)
-    (let [parts (zipmap [:range :step] (split value #"/"))
-          bounds (split (:range parts) #"-")]
-      (set (range (Integer. (nth bounds 0))
-                  (inc (Integer. (nth bounds 1)))
-                  (Integer. (or (:step parts) 1)))))))
+  (let [groups (re-seq #"^(\d+)-(\d+)(/(\d+))?$" value)]
+    (if (not (empty? groups))
+      (reduce (fn [acc [_ start end _ step]]
+                (into acc (range (Integer. start)
+                                 (inc (Integer. end))
+                                 (Integer. (or step 1)))))
+              (set [])
+              groups))))
 
-(defn parse-blank
+(defn parse-?
   "Parse a '?' to just return the empty set."
   [field value date]
   (if (= "?" value) #{}))
 
-(defn parse-wildcard
-  "Parse a cron format wildcard (with optional step) into a set."
+(defn parse-*
+  "Parse '*' (with optional step) into a set."
   [field value date]
   (if (re-find #"\*" value)
     (parse-value
@@ -50,9 +50,8 @@
   "Parse a comma separated list of values into a single set."
   [field value date]
   (if (re-find #"," value)
-    (reduce clojure.set/union
-            (map #(set (parse-value field % date))
-                 (split value #",")))))
+    (reduce into (map #(set (parse-value field % date))
+                      (split value #",")))))
 
 (defn parse-L
   "Parse out L in the day of month field."
@@ -73,8 +72,8 @@
     (filter (complement nil?)
             (map #(% field value date)
                  [parse-list
-                  parse-blank
-                  parse-wildcard
+                  parse-?
+                  parse-*
                   parse-L
                   parse-range
                   parse-integer]))))
@@ -87,7 +86,7 @@
                     (range (inc (mod (+ 7 (- day day1)) 7))
                            (inc (date/last-day-of-month date))
                            7)))
-            #{}
+            (set [])
             days-of-week)))
 
 (defn normalize-wildcards
