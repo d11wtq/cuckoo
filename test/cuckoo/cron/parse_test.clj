@@ -86,10 +86,22 @@
                (:day (parse "* * * * */4 * *"
                             (Date. (- 2016 1900) 1 1)))))))
 
-    (testing "with a single day-of-week integer"
+    (testing "with a single week day integer"
       (testing "expands to the equivalent days of month"
         (is (= #{2 9 16 23}
                (:day (parse "* * * * * 0 *"
+                            (Date. (- 2014 1900) 1 1)))))))
+
+    (testing "with a list of week days"
+      (testing "expands to the equivalent days of month"
+        (is (= #{2 5 9 12 16 19 23 26}
+               (:day (parse "* * * * * 0,3 *"
+                            (Date. (- 2014 1900) 1 1)))))))
+
+    (testing "with both week days and month days"
+      (testing "expands to the union of all days"
+        (is (= #{2 9 16 20 23}
+               (:day (parse "* * * * 9,20 0 *"
                             (Date. (- 2014 1900) 1 1)))))))
 
     (testing "with L in the day field"
