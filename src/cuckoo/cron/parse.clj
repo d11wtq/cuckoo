@@ -65,6 +65,26 @@
         (fn [_] (str (date/max-value field date))))
       date)))
 
+(defn parse-day-names
+  "Parse named days instead of integers."
+  [field value date]
+  (let [mapping {#"(?i)SUN(DAY)?"    0
+                 #"(?i)MON(DAY)?"    1
+                 #"(?i)TUE(SDAY)?"   2
+                 #"(?i)WED(NESDAY)?" 3
+                 #"(?i)THU(RSDAY)?"  4
+                 #"(?i)FRI(DAY)?"    5
+                 #"(?i)SAT(URDAY)?"  6}]
+    (if (and (= :day-of-week field)
+             (some #(re-find % value) (keys mapping)))
+      (parse-value
+        field
+        (reduce (fn [acc [re intval]]
+                  (clojure.string/replace acc re (str intval)))
+                value
+                mapping)
+        date))))
+
 (defn parse-value
   "Parse a value from a cron field into a set."
   [field value date]
@@ -75,6 +95,7 @@
                   parse-?
                   parse-*
                   parse-L
+                  parse-day-names
                   parse-range
                   parse-integer]))))
 

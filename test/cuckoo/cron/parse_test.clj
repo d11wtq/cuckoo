@@ -104,6 +104,50 @@
                (:day (parse "* * * * 9,20 0 *"
                             (Date. (- 2014 1900) 1 1)))))))
 
+    (testing "with a short day name"
+      (testing "expands as if the integer had been used"
+        (doseq [[day dates] {"SUN" #{2  9 16 23}
+                             "MON" #{3 10 17 24}
+                             "TUE" #{4 11 18 25}
+                             "WED" #{5 12 19 26}
+                             "THU" #{6 13 20 27}
+                             "FRI" #{7 14 21 28}
+                             "SAT" #{1  8 15 22}}]
+          (is (= dates
+                 (:day (parse (format "* * * * * %s *" day)
+                              (Date. (- 2014 1900) 1 1))))))))
+
+    (testing "with a full day name"
+      (testing "expands as if the integer had been used"
+        (doseq [[day dates] {"SUNDAY"    #{2  9 16 23}
+                             "MONDAY"    #{3 10 17 24}
+                             "TUESDAY"   #{4 11 18 25}
+                             "WEDNESDAY" #{5 12 19 26}
+                             "THURSDAY"  #{6 13 20 27}
+                             "FRIDAY"    #{7 14 21 28}
+                             "SATURDAY"  #{1  8 15 22}}]
+          (is (= dates
+                 (:day (parse (format "* * * * * %s *" day)
+                              (Date. (- 2014 1900) 1 1))))))))
+
+    (testing "with a range of day names"
+      (testing "expands to the equivalent days of month"
+        (is (= #{2 3 4 9 10 11 16 17 18 23 24 25}
+               (:day (parse "* * * * * SUN-TUE *"
+                            (Date. (- 2014 1900) 1 1)))))))
+
+    (testing "with a range of day names in steps"
+      (testing "expands to the equivalent days of month"
+        (is (= #{2 4 9 11 16 18 23 25}
+               (:day (parse "* * * * * SUN-WED/2 *"
+                            (Date. (- 2014 1900) 1 1)))))))
+
+    (testing "with lowercase day names"
+      (testing "expands to the equivalent days of month"
+        (is (= #{2 9 16 23}
+               (:day (parse "* * * * * sun *"
+                            (Date. (- 2014 1900) 1 1)))))))
+
     (testing "with a ? in the day of month field"
       (testing "is effectively ignored"
         (is (= #{2 9 16 23}
