@@ -104,6 +104,24 @@
                (:day (parse "* * * * 9,20 0 *"
                             (Date. (- 2014 1900) 1 1)))))))
 
+    (testing "with a ? in the day of month field"
+      (testing "is effectively ignored"
+        (is (= #{2 9 16 23}
+               (:day (parse "* * * * ? 0 *"
+                            (Date. (- 2014 1900) 1 1)))))))
+
+    (testing "with a ? in the day of week field"
+      (testing "is effectively ignored"
+        (is (= #{1 2 3 4 5}
+               (:day (parse "* * * * 1-5 ? *"
+                            (Date. (- 2014 1900) 1 1)))))))
+
+    (testing "with a ? in both day of month and day of week fields"
+      (testing "is expanded to the full range"
+        (is (= (set (range 1 29))
+               (:day (parse "* * * * ? ? *"
+                            (Date. (- 2014 1900) 1 1)))))))
+
     (testing "with L in the day field"
       (testing "as a single value"
         (testing "expands to the last day of the month"
