@@ -65,22 +65,33 @@
         (fn [_] (str (date/max-value field date))))
       date)))
 
+(defn short-name-matcher
+  "Returns a regex that matches the first 3 chars of a long string."
+  [value]
+  (re-pattern (format "(?i)%s(%s)?"
+                      (subs value 0 3)
+                      (subs value 3))))
+
 (defn parse-day-names
   "Parse named days instead of integers."
   [field value date]
-  (let [mapping {#"(?i)SUN(DAY)?"    0
-                 #"(?i)MON(DAY)?"    1
-                 #"(?i)TUE(SDAY)?"   2
-                 #"(?i)WED(NESDAY)?" 3
-                 #"(?i)THU(RSDAY)?"  4
-                 #"(?i)FRI(DAY)?"    5
-                 #"(?i)SAT(URDAY)?"  6}]
+  (let [mapping {"SUNDAY"    0
+                 "MONDAY"    1
+                 "TUESDAY"   2
+                 "WEDNESDAY" 3
+                 "THURSDAY"  4
+                 "FRIDAY"    5
+                 "SATURDAY"  6}]
     (if (and (= :day-of-week field)
-             (some #(re-find % value) (keys mapping)))
+             (some #(re-find % value)
+                   (map short-name-matcher (keys mapping))))
       (parse-value
         field
-        (reduce (fn [acc [re intval]]
-                  (clojure.string/replace acc re (str intval)))
+        (reduce (fn [acc [day intval]]
+                  (clojure.string/replace
+                    acc
+                    (short-name-matcher day)
+                    (str intval)))
                 value
                 mapping)
         date))))
@@ -100,6 +111,7 @@
                   parse-integer]))))
 
 (defn days-of-week->days-of-month
+  "Converts a set of days in a week into the same days in the month."
   [days-of-week date]
   (let [day1 (date/first-week-day-of-month date)]
     (reduce (fn [acc day]
@@ -121,16 +133,7 @@
           [:day :day-of-week]))
 
 (defn normalize-day-fields
-  "Enable/disable one of the day of month or day of week fields, if needed.
-
-  Cron is only complicated by the interpretation of these two fields. If both
-  contain non-asterisk values, either may match (union). If only one contains
-  non-asterisk values, it must match, but the other is ignored. If both fields
-  are set to asterisk, all days in the month are counted.
-
-  We do some juggling between '?' (ignored) and '*' (all values) by first
-  replacing '*' with '?', then checking if both fields are ignored. If they
-  are, we enable just the day of month field."
+  "Make sure at most one of :day-of-week and :day has a '?' symbol."
   [cron-map]
   (let [normalized-map (normalize-wildcards cron-map)]
     (if (and (= "?" (:day-of-week normalized-map))
