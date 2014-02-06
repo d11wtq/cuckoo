@@ -205,6 +205,38 @@
           (is (= #{n} (:month (parse (format "* * * %s * * *" month)
                                      (Date. (- 2014 1900) 1 1))))))))
 
+    (testing "with a full month name"
+      (testing "expands as if the integer had been used"
+        (doseq [[month n] {"JANUARY"   1
+                           "FEBRUARY"  2
+                           "MARCH"     3
+                           "APRIL"     4
+                           "MAY"       5
+                           "JUNE"      6
+                           "JULY"      7
+                           "AUGUST"    8
+                           "SEPTEMBER" 9
+                           "OCTOBER"   10
+                           "NOVEMBER"  11
+                           "DECEMBER"  12}]
+          (is (= #{n} (:month (parse (format "* * * %s * * *" month)
+                                     (Date. (- 2014 1900) 1 1))))))))
+
+    (testing "with a range of month names"
+      (testing "expands to the range of integers"
+        (is (= #{3 4 5 6} (:month (parse "* * * MAR-JUN * * *"
+                                         (Date. (- 2014 1900) 1 1)))))))
+
+    (testing "with a range of month names in steps"
+      (testing "expands to the range of integers using step"
+        (is (= #{3 5 7} (:month (parse "* * * MAR-AUG/2 * * *"
+                                       (Date. (- 2014 1900) 1 1)))))))
+
+    (testing "with lowercase month names"
+      (testing "expands as if the integer had been used"
+        (is (= #{3} (:month (parse "* * * mar * * *"
+                                   (Date. (- 2014 1900) 1 1)))))))
+
     (testing "parsing a complex string"
       (is (= {:year        #{2014 2015 2016 2017}
               :month       #{1 2 3 4 5 6 7 8 9 10 11 12}
