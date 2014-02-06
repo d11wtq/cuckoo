@@ -188,6 +188,23 @@
           (is (= (set (range 15 30))
                  (:day (parse "* * * * 15-L * *" (Date. (- 2016 1900) 1 1))))))))
 
+    (testing "with a short month name"
+      (testing "expands as if the integer had been used"
+        (doseq [[month n] {"JAN" 1
+                           "FEB" 2
+                           "MAR" 3
+                           "APR" 4
+                           "MAY" 5
+                           "JUN" 6
+                           "JUL" 7
+                           "AUG" 8
+                           "SEP" 9
+                           "OCT" 10
+                           "NOV" 11
+                           "DEC" 12}]
+          (is (= #{n} (:month (parse (format "* * * %s * * *" month)
+                                     (Date. (- 2014 1900) 1 1))))))))
+
     (testing "parsing a complex string"
       (is (= {:year        #{2014 2015 2016 2017}
               :month       #{1 2 3 4 5 6 7 8 9 10 11 12}

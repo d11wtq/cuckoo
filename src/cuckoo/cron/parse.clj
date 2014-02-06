@@ -72,29 +72,49 @@
                       (subs value 0 3)
                       (subs value 3))))
 
+(defn parse-names
+  "Parse named values into integers, using a lookup table."
+  [field value date mapping]
+  (if (some #(re-find % value) (map short-name-matcher (keys mapping)))
+    (parse-value
+      field
+      (reduce (fn [acc [long-name intval]]
+                (clojure.string/replace
+                  acc
+                  (short-name-matcher long-name)
+                  (str intval)))
+              value
+              mapping)
+      date)))
+
 (defn parse-day-names
   "Parse named days instead of integers."
   [field value date]
-  (let [mapping {"SUNDAY"    0
-                 "MONDAY"    1
-                 "TUESDAY"   2
-                 "WEDNESDAY" 3
-                 "THURSDAY"  4
-                 "FRIDAY"    5
-                 "SATURDAY"  6}]
-    (if (and (= :day-of-week field)
-             (some #(re-find % value)
-                   (map short-name-matcher (keys mapping))))
-      (parse-value
-        field
-        (reduce (fn [acc [day intval]]
-                  (clojure.string/replace
-                    acc
-                    (short-name-matcher day)
-                    (str intval)))
-                value
-                mapping)
-        date))))
+  (if (= :day-of-week field)
+    (parse-names field value date {"SUNDAY"    0
+                                   "MONDAY"    1
+                                   "TUESDAY"   2
+                                   "WEDNESDAY" 3
+                                   "THURSDAY"  4
+                                   "FRIDAY"    5
+                                   "SATURDAY"  6})))
+
+(defn parse-month-names
+  "Parse named months instead of integers."
+  [field value date]
+  (if (= :month field)
+    (parse-names field value date {"JANUARY"   1
+                                   "FEBRUARY"  2
+                                   "MARCH"     3
+                                   "APRIL"     4
+                                   "MAY"       5
+                                   "JUNE"      6
+                                   "JULY"      7
+                                   "AUGUST"    8
+                                   "SEPTEMBER" 9
+                                   "OCTOBER"   10
+                                   "NOVEMBER"  11
+                                   "DECEMBER"  12})))
 
 (defn parse-value
   "Parse a value from a cron field into a set."
@@ -107,6 +127,7 @@
                   parse-*
                   parse-L
                   parse-day-names
+                  parse-month-names
                   parse-range
                   parse-integer]))))
 
