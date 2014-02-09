@@ -30,7 +30,7 @@
       (.set calendar java-field (- (field map) offset)))
     (.getTime calendar)))
 
-(defn first-week-day-of-month
+(defn first-day-of-week-in-month
   "Get the day of week at the start of this month."
   [date]
   (dec

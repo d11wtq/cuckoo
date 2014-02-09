@@ -134,7 +134,7 @@
 (defn days-of-week->days-of-month
   "Converts a set of days in a week into the same days in the month."
   [days-of-week date]
-  (let [day1 (date/first-week-day-of-month date)]
+  (let [day1 (date/first-day-of-week-in-month date)]
     (reduce (fn [acc day]
               (into acc
                     (range (inc (mod (+ 7 (- day day1)) 7))
@@ -169,7 +169,7 @@
   (reduce (fn [acc [field value]]
             (merge acc
                    {field (parse-value field value date)}))
-          {}
+          (hash-map)
           (normalize-day-fields cron-map)))
 
 (defn expand
