@@ -157,8 +157,7 @@
   "Make sure at most one of :day-of-week and :day has a '?' symbol."
   [cron-map]
   (let [normalized-map (normalize-wildcards cron-map)]
-    (if (and (= "?" (:day-of-week normalized-map))
-             (= "?" (:day normalized-map)))
+    (if (apply = "?" ((juxt :day-of-week :day) normalized-map))
       (merge normalized-map {:day "*"})
       normalized-map)))
 
