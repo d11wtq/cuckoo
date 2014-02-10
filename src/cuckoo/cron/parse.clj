@@ -7,6 +7,18 @@
 
 (declare parse-value)
 
+(defn days-of-week->days-of-month
+  "Converts a set of days in a week into the same days in the month."
+  [days-of-week date]
+  (let [day1 (date/first-day-of-week-in-month date)]
+    (reduce (fn [acc day]
+              (into acc
+                    (range (inc (mod (+ 7 (- day day1)) 7))
+                           (inc (date/last-day-of-month date))
+                           7)))
+            (set [])
+            days-of-week)))
+
 (defn parse-integer
   "Parse a single integer string into a set."
   [field value date]
@@ -131,17 +143,26 @@
                   parse-range
                   parse-integer]))))
 
-(defn days-of-week->days-of-month
-  "Converts a set of days in a week into the same days in the month."
-  [days-of-week date]
-  (let [day1 (date/first-day-of-week-in-month date)]
-    (reduce (fn [acc day]
-              (into acc
-                    (range (inc (mod (+ 7 (- day day1)) 7))
-                           (inc (date/last-day-of-month date))
-                           7)))
-            (set [])
-            days-of-week)))
+(defn parse-day-of-week-spec
+  "Return a map of the basic value and a transform fn to parse day-of-week."
+  [value]
+  (let [groups (re-seq #"^(.*?)(L|#([0-5]))?$" value)]
+    (reduce (fn [acc [_ v L n]]
+              {:value v
+               :transform (cond n #(set [(nth n (sort %))])
+                                L #(set [(last (sort %))])
+                                :else identity)})
+            nil
+            groups)))
+
+(defn parse-day-of-week
+  "Special-case handling for parsing days of week into days of month."
+  [field value date]
+  (let [spec (parse-day-of-week-spec value)]
+    ((:transform spec)
+     (days-of-week->days-of-month
+       (parse-value field (:value spec) date)
+       date))))
 
 (defn normalize-wildcards
   "Translates '*' to '?' on the cron date fields."
@@ -157,9 +178,20 @@
   "Make sure at most one of :day-of-week and :day has a '?' symbol."
   [cron-map]
   (let [normalized-map (normalize-wildcards cron-map)]
-    (if (apply = "?" ((juxt :day-of-week :day) normalized-map))
+    (if (apply = "?" (map normalized-map [:day-of-week :day]))
       (merge normalized-map {:day "*"})
       normalized-map)))
+
+(defn parse-fn
+  "Return the function used to parse `field` in the cron map."
+  [field]
+  (field {:year        parse-value
+          :month       parse-value
+          :day         parse-value
+          :day-of-week parse-day-of-week
+          :hour        parse-value
+          :minute      parse-value
+          :second      parse-value}))
 
 (defn expand-raw
   "Literally expand each field into the basic numeric values.
@@ -167,8 +199,7 @@
   This basically does not consider the union between :day and :day-of-week."
   [cron-map date]
   (reduce (fn [acc [field value]]
-            (merge acc
-                   {field (parse-value field value date)}))
+            (merge acc {field ((parse-fn field) field value date)}))
           (hash-map)
           (normalize-day-fields cron-map)))
 
@@ -179,9 +210,7 @@
     (dissoc
       (merge raw-values
              {:day (into (:day raw-values)
-                         (days-of-week->days-of-month
-                           (:day-of-week raw-values)
-                           date))})
+                         (:day-of-week raw-values))})
       :day-of-week)))
 
 (defn normalize-field-count
