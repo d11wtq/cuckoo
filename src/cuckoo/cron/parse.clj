@@ -146,7 +146,7 @@
 (defn parse-day-of-week-spec
   "Return a map of the basic value and a transform fn to parse day-of-week."
   [value]
-  (let [groups (re-seq #"^(.*?)(L|#([0-5]))?$" value)]
+  (let [groups (re-seq #"^(.*?)(L|#([1-5]))?$" value)]
     (reduce (fn [acc [_ v L n]]
               {:value v
                :transform (cond n #(set [(nth (sort %) (dec (Integer. n)))])
