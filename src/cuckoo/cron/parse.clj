@@ -149,7 +149,7 @@
   (let [groups (re-seq #"^(.*?)(L|#([0-5]))?$" value)]
     (reduce (fn [acc [_ v L n]]
               {:value v
-               :transform (cond n #(set [(nth n (sort %))])
+               :transform (cond n #(set [(nth (sort %) (dec (Integer. n)))])
                                 L #(set [(last (sort %))])
                                 :else identity)})
             nil

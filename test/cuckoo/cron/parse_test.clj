@@ -153,6 +153,11 @@
         (is (= #{23} (:day (parse "* * * * * 0L *"
                                   (Date. (- 2014 1900) 1 1)))))))
 
+    (testing "with a #2 suffix on the day of week"
+      (testing "expands to the 2nd week day of the month"
+        (is (= #{9} (:day (parse "* * * * * Sun#2 *"
+                                 (Date. (- 2014 1900) 1 1)))))))
+
     (testing "with a ? in the day of month field"
       (testing "is effectively ignored"
         (is (= #{2 9 16 23}
