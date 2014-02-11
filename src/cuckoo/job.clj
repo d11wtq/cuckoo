@@ -6,9 +6,10 @@
 (defn dump-str
   "Dump a Cuckoo json payload from a Clojure map."
   [payload]
-  (json/write-str (assoc payload
-                         :job (str (:job payload))
-                         :args (vec (:args payload)))))
+  (json/write-str (into (sorted-map)
+                        (assoc payload
+                               :job (str (:job payload))
+                               :args (vec (:args payload))))))
 
 (defn load-str
   "Parse a Cuckoo json payload to a Clojure map."

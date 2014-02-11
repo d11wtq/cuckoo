@@ -18,6 +18,13 @@
                       :job #'println
                       :args ["test"]}))))
 
+    (testing "with empty args vs nil args is the same"
+      (is (= (job/id {:cron "* * * * * * *"
+                      :job #'println
+                      :args []})
+             (job/id {:cron "* * * * * * *"
+                      :job #'println}))))
+
     (testing "for a unique jobs is different"
       (is (not= (job/id {:cron "* * * * * * *"
                          :job #'println
@@ -46,18 +53,18 @@
     (let [payload {:cron "* * * * * * *"
                    :job #'println
                    :args ["test"]}]
-      (testing "returns a json representation"
-        (is (= (format "{\"cron\":\"%s\",\"job\":\"%s\",\"args\":%s}"
+      (testing "returns a json representation with the fields ordered"
+        (is (= (format "{\"args\":%s,\"cron\":\"%s\",\"job\":\"%s\"}"
+                       "[\"test\"]"
                        "* * * * * * *"
-                       "#'clojure.core\\/println"
-                       "[\"test\"]")
+                       "#'clojure.core\\/println")
                (job/dump-str payload))))))
 
   (testing "cuckoo.job/load-str"
-    (let [payload-str (format "{\"cron\":\"%s\",\"job\":\"%s\",\"args\":%s}"
+    (let [payload-str (format "{\"args\":%s,\"cron\":\"%s\",\"job\":\"%s\"}"
+                              "[\"test\"]"
                               "* * * * * * *"
-                              "#'clojure.core\\/println"
-                              "[\"test\"]")]
+                              "#'clojure.core\\/println")]
       (testing "returns a clojure map"
         (is (= {:cron "* * * * * * *"
                 :job #'println
