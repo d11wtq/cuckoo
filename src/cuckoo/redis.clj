@@ -3,77 +3,77 @@
   (:require [taoensso.carmine :as carmine]))
 
 (defmacro with-redis
-  [schedule & body]
-  `(carmine/wcar (:conn ~schedule)
+  [queue & body]
+  `(carmine/wcar (:conn ~queue)
      ~@body))
 
 (defn flushall
   ([]
    (carmine/flushall))
-  ([schedule]
-   (with-redis schedule
+  ([queue]
+   (with-redis queue
      (flushall))))
 
 (defn hget
   ([key field]
    (carmine/hget key field))
-  ([schedule key field]
-   (with-redis schedule
+  ([queue key field]
+   (with-redis queue
      (hget key field))))
 
 (defn hset
   ([key field value]
    (carmine/hset key field value))
-  ([schedule key field value]
-   (with-redis schedule
+  ([queue key field value]
+   (with-redis queue
      (hset key field value))))
 
 (defn hsetnx
   ([key field value]
    (carmine/hsetnx key field value))
-  ([schedule key field value]
-   (with-redis schedule
+  ([queue key field value]
+   (with-redis queue
      (hsetnx key field value))))
 
 (defn zadd
   ([key score value]
    (carmine/zadd key score value))
-  ([schedule key score value]
-   (with-redis schedule
+  ([queue key score value]
+   (with-redis queue
      (zadd key score value))))
 
 (defn zrange
   ([key start stop opts]
    (carmine/zrange key start stop opts))
-  ([schedule key start stop opts]
-   (with-redis schedule
+  ([queue key start stop opts]
+   (with-redis queue
      (zrange key start stop opts))))
 
 (defn zremrangebyrank
   ([key start stop]
    (carmine/zremrangebyrank key start stop))
-  ([schedule key start stop]
-   (with-redis schedule
+  ([queue key start stop]
+   (with-redis queue
      (zremrangebyrank key start stop))))
 
 (defn multi
   ([]
    (carmine/multi))
-  ([schedule]
-   (with-redis schedule
+  ([queue]
+   (with-redis queue
      (multi))))
 
 (defn exec
   ([]
    (carmine/exec))
-  ([schedule]
-   (with-redis schedule
+  ([queue]
+   (with-redis queue
      (exec))))
 
 (defmacro atomic
-  [schedule & body]
+  [queue & body]
   `(last
-     (with-redis ~schedule
+     (with-redis ~queue
        (multi)
        ~@body
        (exec))))
