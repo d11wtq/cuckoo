@@ -21,13 +21,29 @@
    {:name name
     :conn {:pool nil :spec opts}}))
 
+(defn portable-fn
+  "Accepts a fn list and returns an equivalent, but more portable version."
+  [fn-data]
+  (let [wrapper (if (symbol? fn-data)
+                  `resolve
+                  `quote)]
+    (list wrapper fn-data)))
+
 (defn run-time->cron-str
   "Convert a Cuckoo run time vector or keyword to a cron string."
   [run-time]
   (last run-time))
 
-(defn push*
+(defmacro push
   "Add a job to a Cuckoo queue to be performed remotely."
+  [queue run-time fn-data & args]
+  `(push* ~queue
+          ~run-time
+          ~(portable-fn fn-data)
+          ~@args))
+
+(defn push*
+  "The same as macro cuckoo.core/push, except requires `fn-data` to be quoted."
   [queue run-time fn-data & args]
   (let [payload {:cron (run-time->cron-str run-time)
                  :job fn-data
