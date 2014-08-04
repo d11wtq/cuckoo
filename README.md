@@ -5,7 +5,7 @@
 
 Distributed scheduling &amp; queueing for Clojure
 
-> Coming soon.
+> Coming ~~soon~~ eventually.
 
 ## Resources
 
